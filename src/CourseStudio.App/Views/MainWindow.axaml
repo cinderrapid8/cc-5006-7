@@ -1,0 +1,131 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:CourseStudio.App.ViewModels"
+        xmlns:views="using:CourseStudio.App.Views"
+        x:Class="CourseStudio.App.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="Course Studio — screen, camera and voice timeline"
+        Width="1440" Height="900"
+        MinWidth="1100" MinHeight="700">
+
+  <Window.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries />
+    </ResourceDictionary>
+  </Window.Resources>
+
+  <DockPanel>
+    <!-- Menu / toolbar -->
+    <Border DockPanel.Dock="Top" Background="#202026" Padding="8">
+      <WrapPanel>
+        <Button Content="New" Command="{Binding NewProjectCommand}" Margin="2" />
+        <Button Content="Open…" Name="OpenButton" Click="OnOpenProject" Margin="2" />
+        <Button Content="Save…" Name="SaveButton" Click="OnSaveProject" Margin="2" />
+        <Separator Margin="6,2" />
+        <Button Content="Import screen…" Click="OnImportScreen" Margin="2" />
+        <Button Content="Import camera…" Click="OnImportCamera" Margin="2" />
+        <Button Content="Import audio…" Click="OnImportAudio" Margin="2" />
+        <Separator Margin="6,2" />
+        <Button Content="Undo" Command="{Binding UndoCommand}" Margin="2" />
+        <Button Content="Redo" Command="{Binding RedoCommand}" Margin="2" />
+        <Separator Margin="6,2" />
+        <Button Content="Export video…" Name="ExportButton" Click="OnExport" Margin="2"
+                Background="#3A6EA5" />
+      </WrapPanel>
+    </Border>
+
+    <!-- Status bar -->
+    <Border DockPanel.Dock="Bottom" Background="#202026" Padding="8">
+      <StackPanel Spacing="4">
+        <ProgressBar IsIndeterminate="{Binding IsExporting}" Maximum="1" Value="{Binding ExportProgress}"
+                     Height="6" IsVisible="{Binding IsExporting}" />
+        <TextBlock Text="{Binding StatusMessage}" Foreground="LightGray" TextWrapping="Wrap" />
+      </StackPanel>
+    </Border>
+
+    <Grid ColumnDefinitions="250,*" RowDefinitions="*,260">
+      <!-- Left inspector -->
+      <Border Grid.Column="0" Grid.RowSpan="2" Background="#18181D" Padding="10">
+        <ScrollViewer>
+          <StackPanel Spacing="10">
+            <TextBlock Text="Canvas" FontWeight="SemiBold" Foreground="White" />
+            <TextBlock Foreground="LightGray"
+                       Text="{Binding Project.CanvasWidth, StringFormat='Width: {0} px'}" />
+            <TextBlock Foreground="LightGray"
+                       Text="{Binding Project.CanvasHeight, StringFormat='Height: {0} px'}" />
+
+            <TextBlock Text="Track locks" FontWeight="SemiBold" Foreground="White" Margin="0,8,0,0" />
+            <CheckBox Content="Lock screen" IsChecked="{Binding Project.ScreenLocked}" />
+            <CheckBox Content="Lock camera" IsChecked="{Binding Project.CameraLocked}" />
+            <CheckBox Content="Lock audio" IsChecked="{Binding Project.AudioLocked}" />
+
+            <TextBlock Text="Selected clip" FontWeight="SemiBold" Foreground="White" Margin="0,8,0,0" />
+            <TextBlock Foreground="LightGray" TextWrapping="Wrap"
+                       Text="{Binding SelectedRow.Label, TargetNullValue='(none)'}" />
+            <TextBlock Text="Source in (s)" Foreground="LightGray" />
+            <NumericUpDown Value="{Binding TrimInSeconds}" FormatString="0.000" Increment="0.1" Minimum="0" />
+            <TextBlock Text="Source out (s)" Foreground="LightGray" />
+            <NumericUpDown Value="{Binding TrimOutSeconds}" FormatString="0.000" Increment="0.1" Minimum="0" />
+            <TextBlock Text="Timeline start (s)" Foreground="LightGray" />
+            <NumericUpDown Value="{Binding ClipStartSeconds}" FormatString="0.000" Increment="0.1" Minimum="0" />
+            <Button Content="Apply trim / start" Command="{Binding ApplyTrimCommand}" />
+            <Button Content="Move to playhead" Command="{Binding MoveSelectedToPlayheadCommand}" />
+            <Button Content="Hide / show camera" Command="{Binding HideCameraCommand}" />
+
+            <TextBlock Text="Picture-in-picture" FontWeight="SemiBold" Foreground="White" Margin="0,8,0,0" />
+            <WrapPanel>
+              <RadioButton Content="↖" GroupName="PipCorner" Click="OnPipCorner" Tag="TopLeft" Margin="2" />
+              <RadioButton Content="↗" GroupName="PipCorner" Click="OnPipCorner" Tag="TopRight" Margin="2" />
+              <RadioButton Content="↙" GroupName="PipCorner" Click="OnPipCorner" Tag="BottomLeft" Margin="2" />
+              <RadioButton Content="↘" GroupName="PipCorner" Click="OnPipCorner" Tag="BottomRight" Margin="2"
+                           IsChecked="True" />
+            </WrapPanel>
+            <TextBlock Text="Width ratio" Foreground="LightGray" />
+            <NumericUpDown Value="{Binding PipWidthRatio}" Minimum="0.05" Maximum="1" Increment="0.05"
+                           FormatString="0.00" />
+            <TextBlock Text="Margin (canvas px)" Foreground="LightGray" />
+            <NumericUpDown Value="{Binding PipMargin}" Minimum="0" Increment="4" />
+            <TextBlock Text="Opacity" Foreground="LightGray" />
+            <NumericUpDown Value="{Binding PipOpacity}" Minimum="0" Maximum="1" Increment="0.1"
+                           FormatString="0.00" />
+            <Button Content="Apply PIP" Command="{Binding ApplyPipCommand}" />
+
+            <TextBlock Text="Ripple delete" FontWeight="SemiBold" Foreground="White" Margin="0,8,0,0" />
+            <CheckBox Content="Move screen" IsChecked="{Binding RippleScreen}" />
+            <CheckBox Content="Move camera" IsChecked="{Binding RippleCamera}" />
+            <CheckBox Content="Move audio" IsChecked="{Binding RippleAudio}" />
+            <Button Content="Set range start = playhead" Command="{Binding SetRangeFromPlayheadCommand}"
+                    CommandParameter="true" />
+            <Button Content="Set range end = playhead" Command="{Binding SetRangeFromPlayheadCommand}"
+                    CommandParameter="false" />
+            <TextBlock Foreground="LightGray"
+                       Text="{Binding RangeStartMicros, StringFormat='Range start: {0} μs'}" />
+            <TextBlock Foreground="LightGray"
+                       Text="{Binding RangeEndMicros, StringFormat='Range end: {0} μs'}" />
+            <Button Content="Ripple delete range" Command="{Binding RippleDeleteCommand}"
+                    Background="#8A3A3A" />
+            <Button Content="Mute range (no time cut)" Command="{Binding AddMuteCommand}" />
+
+            <TextBlock Text="Preview" FontWeight="SemiBold" Foreground="White" Margin="0,8,0,0" />
+            <CheckBox Content="Show camera layer" IsChecked="{Binding ShowCamera}" />
+            <TextBlock Text="Timeline zoom" Foreground="LightGray" />
+            <NumericUpDown Value="{Binding PreviewScale}" Minimum="0.25" Maximum="4" Increment="0.25"
+                           FormatString="0.00" />
+          </StackPanel>
+        </ScrollViewer>
+      </Border>
+
+      <!-- Preview area -->
+      <Border Grid.Column="1" Grid.Row="0" Background="Black">
+        <views:PreviewControl ViewModel="{Binding}" />
+      </Border>
+
+      <!-- Timeline -->
+      <Border Grid.Column="1" Grid.Row="1" Background="#141418" Padding="0,4">
+        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+          <views:TimelineControl ViewModel="{Binding}" />
+        </ScrollViewer>
+      </Border>
+    </Grid>
+  </DockPanel>
+</Window>

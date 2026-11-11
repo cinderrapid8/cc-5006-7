@@ -1,0 +1,19 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="CourseStudio.App.App"
+             RequestedThemeVariant="Dark"
+             xmlns:local="using:CourseStudio.App">
+
+  <Application.Styles>
+    <FluentTheme />
+  </Application.Styles>
+
+  <Application.Resources>
+    <Color x:Key="TrackScreenColor">#2D5DA1</Color>
+    <Color x:Key="TrackCameraColor">#7A3FA0</Color>
+    <Color x:Key="TrackAudioColor">#2E7D52</Color>
+    <SolidColorBrush x:Key="TrackScreenBrush" Color="#2D5DA1" />
+    <SolidColorBrush x:Key="TrackCameraBrush" Color="#7A3FA0" />
+    <SolidColorBrush x:Key="TrackAudioBrush" Color="#2E7D52" />
+  </Application.Resources>
+</Application>
