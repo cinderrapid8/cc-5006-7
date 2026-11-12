@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Full verification pipeline: synthetic media -> unit tests -> end-to-end render checks.
+# Full verification pipeline: synthetic media -> unit tests -> compositing
+# acceptance (with controlled-error gate) -> end-to-end render checks.
 # Requires: dotnet 8 SDK on PATH and ffmpeg/ffprobe (set COURSESTUDIO_FFMPEG /
 # COURSESTUDIO_FFPROBE to override discovery).
 set -euo pipefail
@@ -21,11 +22,14 @@ if [ -z "${COURSESTUDIO_FFPROBE:-}" ]; then
 fi
 export PATH="$(dirname "$COURSESTUDIO_FFMPEG"):$HOME/.dotnet:$PATH"
 
-echo "== 1/3 generating synthetic course media =="
+echo "== 1/4 generating synthetic course media =="
 python3 -I tools/generate_test_media.py --out artifacts/test-media
 
-echo "== 2/3 unit tests =="
+echo "== 2/4 unit tests =="
 dotnet test tests/CourseStudio.Tests/CourseStudio.Tests.csproj -v q
 
-echo "== 3/3 end-to-end render verification =="
+echo "== 3/4 compositing acceptance (saved project -> reopened export, mutation gate) =="
+tools/acceptance.sh --with-mutation
+
+echo "== 4/4 end-to-end render verification =="
 dotnet run --project tools/CourseStudio.Verify -- artifacts/test-media

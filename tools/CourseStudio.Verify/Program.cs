@@ -108,11 +108,12 @@ var frameDir = Path.Combine(workDir, "frames");
 Directory.CreateDirectory(frameDir);
 await Ffmpeg($"-y -i \"{output1}\" -vf fps=1 \"{Path.Combine(frameDir, "f-%02d.png")}\"");
 
-// Camera PIP bottom-right. At the sampled frame the camera shows its block color;
-// sample well inside the PIP (its width is 25% of canvas = 320px, margin 24).
+// Camera PIP bottom-right. The camera clip starts at 1s, so at t≈2.5s (f-03) the
+// overlay shows camera source time 1.5s -> palette block 1 (content phase follows
+// the clip's timeline position).
 var pipProbe = await ProbePixel(Path.Combine(frameDir, "f-03.png"), 1280 - 200, 720 - 120);
 Check("camera PIP visible at bottom-right during camera clip",
-    ColorClose(pipProbe, (70, 110, 200), tolerance: 60),
+    ColorClose(pipProbe, (90, 160, 70), tolerance: 60),
     $"rgb=({pipProbe.R},{pipProbe.G},{pipProbe.B})");
 
 // Center of frame at t=6s belongs to screen B content (dark UI background color), not camera.

@@ -157,7 +157,8 @@ public sealed class FilterGraphBuilder
             var trimmed = NextLabel("cam");
             _lines.Add(
                 $"[{input}:v]trim=start={T(clip.SourceIn)}:end={T(clip.SourceOut)}," +
-                $"setpts=PTS-STARTPTS,fps={_project.FrameRate},setsar=1[{trimmed}]");
+                $"setpts=PTS-STARTPTS,fps={_project.FrameRate},setsar=1," +
+                $"setpts=PTS+{T(clip.Start)}/TB[{trimmed}]");
 
             var scaled = NextLabel("cam");
             _lines.Add(
